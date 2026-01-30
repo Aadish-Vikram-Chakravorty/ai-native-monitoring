@@ -1,42 +1,47 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
+const pool = require("./db");
 
 app.use(express.json());
-
-// Temporary in-memory storage for metrics
-let metricsData = [];
-
+app.use(cors());
 // Health check
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// API to receive metrics
-app.post("/api/metrics", (req, res) => {
+// Save metrics in DB
+app.post("/api/metrics", async (req, res) => {
   const { apiName, latency, errorCount } = req.body;
 
-  // basic validation
   if (!apiName || latency === undefined || errorCount === undefined) {
     return res.status(400).json({ message: "Invalid data" });
   }
 
-  const metric = {
-    apiName,
-    latency,
-    errorCount,
-    time: new Date()
-  };
+  try {
+    await pool.query(
+      "INSERT INTO metrics (api_name, latency, error_count) VALUES ($1, $2, $3)",
+      [apiName, latency, errorCount]
+    );
 
-  metricsData.push(metric);
-
-  console.log("Received metric:", metric);
-
-  res.status(201).json({ message: "Metric received" });
+    res.status(201).json({ message: "Metric saved in DB" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
 });
 
-// API to view metrics
-app.get("/api/metrics", (req, res) => {
-  res.json(metricsData);
+// Fetch metrics from DB
+app.get("/api/metrics", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM metrics ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
 });
 
 app.listen(5000, () => {

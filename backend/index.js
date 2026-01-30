@@ -5,12 +5,13 @@ const pool = require("./db");
 
 app.use(express.json());
 app.use(cors());
+
 // Health check
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// Save metrics in DB
+// Save metrics in DB with anomaly detection
 app.post("/api/metrics", async (req, res) => {
   const { apiName, latency, errorCount } = req.body;
 
@@ -19,12 +20,33 @@ app.post("/api/metrics", async (req, res) => {
   }
 
   try {
-    await pool.query(
-      "INSERT INTO metrics (api_name, latency, error_count) VALUES ($1, $2, $3)",
-      [apiName, latency, errorCount]
+    // Get last 10 latencies
+    const result = await pool.query(
+      "SELECT latency FROM metrics ORDER BY created_at DESC LIMIT 10"
     );
 
-    res.status(201).json({ message: "Metric saved in DB" });
+    let isAnomaly = false;
+
+    if (result.rows.length > 0) {
+      const latencies = result.rows.map(r => r.latency);
+      const avg =
+        latencies.reduce((a, b) => a + b, 0) / latencies.length;
+
+      if (latency > avg * 1.5) {
+        isAnomaly = true;
+        console.log("🚨 ALERT: High latency detected for", apiName);
+      }
+    }
+
+    await pool.query(
+      "INSERT INTO metrics (api_name, latency, error_count, is_anomaly) VALUES ($1, $2, $3, $4)",
+  [apiName, latency, errorCount, isAnomaly]
+    );
+
+    res.status(201).json({
+      message: "Metric saved",
+      anomaly: isAnomaly
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Database error" });

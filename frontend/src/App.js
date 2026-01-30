@@ -43,8 +43,17 @@ function App() {
         </thead>
         <tbody>
           {metrics.map((m) => (
-            <tr key={m.id}>
-              <td>{m.api_name}</td>
+            <tr
+              key={m.id}
+              style={{
+                backgroundColor: m.is_anomaly ? "#ffcccc" : "white"
+              }}
+            >
+              <td>
+                {m.api_name}
+                {m.is_anomaly && <strong style={{ color: "red" }}> (ANOMALY)</strong>}
+              </td>
+
               <td>{m.latency}</td>
               <td>{m.error_count}</td>
               <td>{new Date(m.created_at).toLocaleString()}</td>

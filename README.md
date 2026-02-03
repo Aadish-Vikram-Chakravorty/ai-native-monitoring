@@ -51,11 +51,6 @@ The system is designed in a modular way, separating metric ingestion, analysis, 
 
 ---
 
-## Current Status
-
-🚧 **Actively under development**
-
----
 
 ## Example Workflow
 

@@ -45,9 +45,8 @@ The system is designed in a modular way, separating metric ingestion, analysis, 
 - **Frontend**: React
 - **Backend**: Node.js, Express.js
 - **Database**: PostgreSQL
-- **AI**: OpenAI / local LLM (Ollama)
-- **Data Processing**: Python (for anomaly detection experiments)
-- **Dev Tools**: Docker, Git, Postman
+- **AI**: Groq (LLM API)
+- **Dev Tools**: Git, Postman
 
 ---
 

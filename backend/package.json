@@ -12,7 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "groq-sdk": "^0.37.0",
+    "openai": "^6.17.0",
     "pg": "^8.18.0"
   },
   "devDependencies": {
